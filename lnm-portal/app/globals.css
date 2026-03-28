@@ -1,0 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap");
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Poppins", "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", monospace;
+}
+
+:root {
+  --green: #30B54A;
+  --green-dark: #006633;
+  --green-light: #e8f5e9;
+  --green-mid: #00CC66;
+  --sidebar-w: 260px;
+}
+
+body {
+  font-family: "Poppins", "Segoe UI", sans-serif;
+  background: #f9fafb;
+  color: #111827;
+}
