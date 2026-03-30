@@ -146,7 +146,7 @@ export default function TicketsPage({ filterMerchantId, merchantMode = false }: 
                 {(merchantMode ? merchantProgressStages : stageOrder.filter((s) => s !== "Rejected")).map((s) => {
                   const done =
                     t.stage !== "Rejected" &&
-                    stageOrder.indexOf(s) <= stageOrder.indexOf(t.stage);
+                    stageOrder.indexOf(s as TicketStage) <= stageOrder.indexOf(t.stage);
                   return (
                     <div
                       key={s}
