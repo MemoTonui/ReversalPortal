@@ -46,28 +46,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [notifications, setNotifications] = useState<Notification[]>([
     {
-      id: "N001", ticketId: "TKT-2024-0891",
+      id: "N001", ticketId: "TKT-2026-0891",
       merchantId: "M001", aggregatorId: "AGG001",
-      message: "Action required: TKT-2024-0891 has been escalated to you — please review settlement records (KES 3,450)",
-      timestamp: "2024-03-20 13:01", read: false, type: "action",
+      message: "Action required: TKT-2026-0891 has been escalated to you — please review settlement records (KES 3,450)",
+      timestamp: "2026-03-20 13:01", read: false, type: "action",
     },
     {
-      id: "N002", ticketId: "TKT-2024-0887",
+      id: "N002", ticketId: "TKT-2026-0887",
       merchantId: "M001", aggregatorId: "AGG001",
-      message: "Action required: Please confirm reversal for TKT-2024-0887 (KES 1,200) — forwarded by Cellulant",
-      timestamp: "2024-03-20 08:01", read: false, type: "action",
+      message: "Action required: Please confirm reversal for TKT-2026-0887 (KES 1,200) — forwarded by Cellulant",
+      timestamp: "2026-03-20 08:01", read: false, type: "action",
     },
     {
-      id: "N003", ticketId: "TKT-2024-0871",
+      id: "N003", ticketId: "TKT-2026-0871",
       merchantId: "M003", aggregatorId: "AGG003",
-      message: "Update: Quickmart confirmed TKT-2024-0871. Please proceed with processing (KES 5,780)",
-      timestamp: "2024-03-20 07:31", read: false, type: "action",
+      message: "Update: Quickmart confirmed TKT-2026-0871. Please proceed with processing (KES 5,780)",
+      timestamp: "2026-03-20 07:31", read: false, type: "action",
     },
     {
-      id: "N004", ticketId: "TKT-2024-0855",
+      id: "N004", ticketId: "TKT-2026-0855",
       merchantId: "M002", aggregatorId: "AGG002",
-      message: "Resolved: TKT-2024-0855 has been successfully reversed. KES 850 returned to customer.",
-      timestamp: "2024-03-18 08:01", read: true, type: "resolved",
+      message: "Resolved: TKT-2026-0855 has been successfully reversed. KES 850 returned to customer.",
+      timestamp: "2026-03-18 08:01", read: true, type: "resolved",
     },
   ]);
 

@@ -6,26 +6,46 @@ import TicketDrawer from "./TicketDrawer";
 
 type Props = { filterMerchantId?: string; merchantMode?: boolean };
 
+const merchantStageLabel: Record<string, string> = {
+  "Submitted": "Under Review",
+  "Under Review": "Under Review",
+  "Escalated to Aggregator": "Under Review",
+  "Sent to Merchant": "Action Required",
+  "Merchant Confirmed": "Processing",
+  "Aggregator Processing": "Processing",
+  "Resolved": "Resolved",
+  "Rejected": "Rejected",
+};
+
+const merchantStageFilters = ["All", "Under Review", "Action Required", "Processing", "Resolved", "Rejected"];
+
 export default function TicketsPage({ filterMerchantId, merchantMode = false }: Props) {
   const { tickets } = useStore();
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [stageFilter, setStageFilter] = useState<TicketStage | "All">("All");
+  const [stageFilter, setStageFilter] = useState("All");
   const [search, setSearch] = useState("");
 
   const filtered = tickets.filter((t) => {
     const matchMerchant = filterMerchantId ? t.merchantId === filterMerchantId : true;
-    const matchStage = stageFilter === "All" || t.stage === stageFilter;
     const matchSearch =
       t.id.toLowerCase().includes(search.toLowerCase()) ||
       t.merchantName.toLowerCase().includes(search.toLowerCase()) ||
       t.customerPhone.includes(search);
-    return matchMerchant && matchStage && matchSearch;
+
+    if (!matchMerchant || !matchSearch) return false;
+
+    if (merchantMode && stageFilter !== "All") {
+      return merchantStageLabel[t.stage] === stageFilter;
+    }
+
+    return stageFilter === "All" || t.stage === stageFilter;
   });
 
-  // Sync drawer ticket from live tickets
   const liveSelectedTicket = selectedTicket
     ? tickets.find((t) => t.id === selectedTicket.id) ?? selectedTicket
     : null;
+
+  const filterOptions = merchantMode ? merchantStageFilters : ["All", ...stageOrder];
 
   return (
     <div className="space-y-6">
@@ -49,20 +69,20 @@ export default function TicketsPage({ filterMerchantId, merchantMode = false }: 
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tickets..."
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
-            onFocus={(e) => (e.target.style.borderColor = "#4caf50")}
+            onFocus={(e) => (e.target.style.borderColor = "#30B54A")}
             onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
           />
         </div>
         <div className="flex gap-2 flex-wrap">
-          {(["All", ...stageOrder] as const).map((s) => (
+          {filterOptions.map((s) => (
             <button
               key={s}
-              onClick={() => setStageFilter(s as TicketStage | "All")}
+              onClick={() => setStageFilter(s)}
               className="px-3 py-2 rounded-xl text-xs font-medium border transition-all"
               style={{
-                background: stageFilter === s ? "#2e7d32" : "white",
+                background: stageFilter === s ? "#006633" : "white",
                 color: stageFilter === s ? "white" : "#374151",
-                borderColor: stageFilter === s ? "#2e7d32" : "#e5e7eb",
+                borderColor: stageFilter === s ? "#006633" : "#e5e7eb",
               }}
             >
               {s}
@@ -74,9 +94,11 @@ export default function TicketsPage({ filterMerchantId, merchantMode = false }: 
       {/* Cards */}
       <div className="space-y-3">
         {filtered.map((t) => {
-          const needsMerchantAction =
-            merchantMode &&
-            (t.stage === "Sent to Merchant");
+          const needsMerchantAction = merchantMode && t.stage === "Sent to Merchant";
+          const displayStage = merchantMode ? (merchantStageLabel[t.stage] ?? t.stage) : t.stage;
+
+          const merchantProgressStages = ["Under Review", "Sent to Merchant", "Merchant Confirmed", "Resolved"];
+
           return (
             <div
               key={t.id}
@@ -88,12 +110,18 @@ export default function TicketsPage({ filterMerchantId, merchantMode = false }: 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="font-mono text-sm font-semibold text-gray-900">{t.id}</span>
-                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${stageColors[t.stage]}`}>{t.stage}</span>
+                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${stageColors[t.stage]}`}>
+                      {displayStage}
+                    </span>
                     {needsMerchantAction && (
-                      <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700">Action required</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700">
+                        Action required
+                      </span>
                     )}
                   </div>
-                  {!filterMerchantId && <div className="text-sm text-gray-700 font-medium">{t.merchantName}</div>}
+                  {!filterMerchantId && (
+                    <div className="text-sm text-gray-700 font-medium">{t.merchantName}</div>
+                  )}
                   <div className="text-xs text-gray-400 mt-1 line-clamp-1">{t.description}</div>
                 </div>
                 <div className="text-right flex-shrink-0">
@@ -103,23 +131,38 @@ export default function TicketsPage({ filterMerchantId, merchantMode = false }: 
               </div>
 
               <div className="mt-4 flex items-center gap-4 text-xs text-gray-500">
-                <span className="px-2 py-0.5 rounded-md font-medium" style={{ background: "#e8f5e9", color: "#2e7d32" }}>{t.aggregator}</span>
+                {!merchantMode && (
+                  <span className="px-2 py-0.5 rounded-md font-medium" style={{ background: "#e6f7ec", color: "#006633" }}>
+                    {t.aggregator}
+                  </span>
+                )}
                 <span className="font-mono">{t.tillNumber}</span>
                 <span>{t.customerPhone}</span>
                 <span className="ml-auto text-gray-400">{t.timeline.length} updates →</span>
               </div>
 
+              {/* Progress bar */}
               <div className="mt-4 flex gap-1">
-                {stageOrder.filter((s) => s !== "Rejected").map((s) => {
-                  const done = t.stage !== "Rejected" && stageOrder.indexOf(s) <= stageOrder.indexOf(t.stage);
-                  return <div key={s} className="flex-1 h-1 rounded-full" style={{ background: done ? "#4caf50" : "#e5e7eb" }} />;
+                {(merchantMode ? merchantProgressStages : stageOrder.filter((s) => s !== "Rejected")).map((s) => {
+                  const done =
+                    t.stage !== "Rejected" &&
+                    stageOrder.indexOf(s) <= stageOrder.indexOf(t.stage);
+                  return (
+                    <div
+                      key={s}
+                      className="flex-1 h-1 rounded-full"
+                      style={{ background: done ? "#30B54A" : "#e5e7eb" }}
+                    />
+                  );
                 })}
               </div>
             </div>
           );
         })}
         {filtered.length === 0 && (
-          <div className="py-20 text-center text-gray-400 text-sm bg-white rounded-2xl border border-gray-100">No tickets found</div>
+          <div className="py-20 text-center text-gray-400 text-sm bg-white rounded-2xl border border-gray-100">
+            No tickets found
+          </div>
         )}
       </div>
 
@@ -127,7 +170,6 @@ export default function TicketsPage({ filterMerchantId, merchantMode = false }: 
         <TicketDrawer
           ticket={liveSelectedTicket}
           onClose={() => setSelectedTicket(null)}
-          
         />
       )}
     </div>
